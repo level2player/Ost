@@ -17,10 +17,18 @@ namespace Ost
         static string URLSH = "http://quote.eastmoney.com/stocklist.html#sh";
         static string CsvUrl = "http://quotes.money.163.com/service/chddata.html?code={0}";
 
-        public static async void StartOst(Action<bool> ComplteCallBack)
+        public static async void StartOstLoadCSV(Action<bool> ComplteCallBack)
         {
-            var dicStockList = await GetStockList();
-            var csvStockList = await LoadCSVData(dicStockList);
+           var dicStockList = await GetStockList();
+           var csvStockList = await LoadCSVData(dicStockList);
+
+            ComplteCallBack(true);
+            
+        }
+
+        public static async void StartOstPost(Action<bool> ComplteCallBack)
+        {
+
             var simpleStockinfoList = await GetSimpleStockInfo();
             var scount = await PostStockInfo(simpleStockinfoList);
             ComplteCallBack(true);
@@ -130,11 +138,11 @@ namespace Ost
                 Stopwatch watch = new Stopwatch();
                 watch.Start();
                 int scount = 0;
+                var http = new HttpClient();
                 foreach (var simpleStockinfo in ListData)
                 {
                     Stopwatch watch2 = new Stopwatch();
                     watch2.Start();
-                    var http = new HttpClient();
                     var response = http.Post(URL, simpleStockinfo, HttpContentTypes.ApplicationJson);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {

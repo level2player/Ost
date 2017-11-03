@@ -1,10 +1,10 @@
 D:\src\Ost\Ost\bin\Debug\Ost.exe.config
 D:\src\Ost\Ost\bin\Debug\Ost.exe
 D:\src\Ost\Ost\bin\Debug\Ost.pdb
-D:\src\Ost\Ost\obj\Debug\Ost.csprojResolveAssemblyReference.cache
 D:\src\Ost\Ost\obj\Debug\Ost.exe
 D:\src\Ost\Ost\obj\Debug\Ost.pdb
 D:\src\Ost\Ost\bin\Debug\EasyHttp.dll
 D:\src\Ost\Ost\bin\Debug\JsonFx.dll
 D:\src\Ost\Ost\bin\Debug\EasyHttp.pdb
 D:\src\Ost\Ost\bin\Debug\JsonFx.xml
+D:\src\Ost\Ost\obj\Debug\Ost.csprojResolveAssemblyReference.cache

@@ -6,21 +6,40 @@ namespace Ost
 {
     class Program
     {
+        private static bool IsComplte = true;
+        private static string readLineString;
+        public static string ReadLineString
+        {
+            get { return readLineString; }
+            set
+            {
+                if (value == "load"&& IsComplte)
+                {
+                    readLineString = "load";
+                    IsComplte = false;
+                    OstServices.StartOstLoadCSV((isok) =>
+                    {
+                        IsComplte = isok;
+                        Console.WriteLine("OstLoadCSV Execute Complete");
+                    });
+                }
+                else if (value == "post"&& IsComplte)
+                {
+                    IsComplte = false;
+                    OstServices.StartOstPost((isok) =>
+                    {
+                        IsComplte = isok;
+                        Console.WriteLine("OstPost Execute Complete");
+                    });
+                }
+            }
+        }
         static void Main(string[] args)
         {
-            var isComplete = false;
-            OstServices.StartOst((isok) =>
-            {
-                Console.WriteLine("ost execute complete");
-                isComplete = true;
-            });
+            Console.WriteLine("input load/post~");
             while (true)
             {
-                if (isComplete)
-                {
-                    Console.ReadKey();
-                    break;
-                }
+                ReadLineString = Console.ReadLine();
                 Thread.Sleep(100);
             }
         }
