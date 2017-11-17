@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\HKTradeTT.cs" />
     <Compile Include="Models\SimpleStockinfo.cs" />
     <Compile Include="OstHelper.cs" />
     <Compile Include="OstServices.cs" />

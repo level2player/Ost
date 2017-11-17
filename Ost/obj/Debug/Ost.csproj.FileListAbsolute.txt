@@ -7,4 +7,3 @@ D:\src\Ost\Ost\bin\Debug\EasyHttp.dll
 D:\src\Ost\Ost\bin\Debug\JsonFx.dll
 D:\src\Ost\Ost\bin\Debug\EasyHttp.pdb
 D:\src\Ost\Ost\bin\Debug\JsonFx.xml
-D:\src\Ost\Ost\obj\Debug\Ost.csprojResolveAssemblyReference.cache

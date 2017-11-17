@@ -14,25 +14,26 @@ namespace Ost
     public static class OstServices
     {
         static string URL = "http://www.zenyu.site/data/webapinsertstockinfo";
+        static string URL2 = "http://www.zenyu.site/data/webapihktradett";
         static string URLSH = "http://quote.eastmoney.com/stocklist.html#sh";
         static string CsvUrl = "http://quotes.money.163.com/service/chddata.html?code={0}";
 
         public static async void StartOstLoadCSV(Action<bool> ComplteCallBack)
         {
-           var dicStockList = await GetStockList();
-           var csvStockList = await LoadCSVData(dicStockList);
-
+            var dicStockList = await GetStockList();
+            var csvStockList = await LoadCSVData(dicStockList);
             ComplteCallBack(true);
-            
         }
 
         public static async void StartOstPost(Action<bool> ComplteCallBack)
         {
-
-            var simpleStockinfoList = await GetSimpleStockInfo();
-            var scount = await PostStockInfo(simpleStockinfoList);
+            //var simpleStockinfoList = await GetSimpleStockInfo();
+            // var scount = await PostStockInfo(simpleStockinfoList, URL);
+            // AsyPostStockInfo(simpleStockinfoList, (Iscomplte) => { ComplteCallBack(Iscomplte); });
+            var hkTradeLog = await GetHkTradeLog();
+            var scount = await PostStockInfo(hkTradeLog, URL2);
             ComplteCallBack(true);
-            //  AsyPostStockInfo(simpleStockinfoList, (Iscomplte) => { ComplteCallBack(Iscomplte); });
+           
         }
 
         public async static Task<Dictionary<string, string>> GetStockList()
@@ -94,7 +95,7 @@ namespace Ost
                    if (File.Exists(csvfile))
                    {
                        var simpleStockinfo = new SimpleStockinfo();
-                       var dt = OstHelper.ConvertCSVtoDataTable(csvfile);
+                       var dt = OstHelper.ConvertCSVtoDataTable(csvfile, ',');
                        int index = 0;
                        foreach (DataRow dr in dt.Rows)
                        {
@@ -130,8 +131,44 @@ namespace Ost
                return simpleStockinfoList;
            });
         }
+        /// <summary>
+        /// GetHkTradeLog
+        /// </summary>
+        /// <returns></returns>
+        public async static Task<List<HKTradeTT>> GetHkTradeLog()
+        {
+            return await Task.Run(() =>
+            {
+                List<HKTradeTT> List = new List<HKTradeTT>();
+                DirectoryInfo TheFolder = new DirectoryInfo(@"tradelog");
+                foreach (FileInfo fileinfo in TheFolder.GetFiles())
+                {
+                    var dt = OstHelper.ConvertCSVtoDataTable("tradelog" + "/" + fileinfo.Name, '\t');
+                    var hKTradeTT = new HKTradeTT();
+                    int index = 0;
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        index++;
+                        if (index == 1)
+                        {
+                            hKTradeTT.StockCode = dr["stkcode"].ToString().Replace("'", String.Empty);
+                        }
+                        var tradeLog = new TradeLog();
+                        tradeLog.TickerId = int.Parse(dr["ticker_id"].ToString().Replace("-", string.Empty));
+                        tradeLog.Cancelled = dr["cancelled"].ToString();
+                        tradeLog.TradePrice = GetRealDoubleValue(dr["price"].ToString());
+                        tradeLog.AggrQty = GetRealDoubleValue(dr["aggr_qty"].ToString());
+                        tradeLog.TradeTime = (dr["trade_time"].ToString()).Length == 5 ? dr["trade_time"].ToString().Insert(0, "0") : dr["trade_time"].ToString();
+                        tradeLog.TradeType = int.Parse(dr["trade_type"].ToString().Replace("-", string.Empty));
+                        hKTradeTT.TradeLogs.Add(tradeLog);
+                    }
+                    List.Add(hKTradeTT);
+                }
+                return List;
+            });
+        }
 
-        public async static Task<int> PostStockInfo(List<SimpleStockinfo> ListData)
+        public async static Task<int> PostStockInfo<T>(List<T> ListData, string Url)
         {
             return await Task.Run(() =>
             {
@@ -143,17 +180,17 @@ namespace Ost
                 {
                     Stopwatch watch2 = new Stopwatch();
                     watch2.Start();
-                    var response = http.Post(URL, simpleStockinfo, HttpContentTypes.ApplicationJson);
+                    var response = http.Post(Url, simpleStockinfo, HttpContentTypes.ApplicationJson);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         watch2.Stop();
-                        Console.WriteLine($"Post StockCode={simpleStockinfo.StockCode},Spend time={watch2.ElapsedMilliseconds.ToString("N0")}ms");
+                        Console.WriteLine($"Post completion,HttpErrorCode={response.StatusCode},Spend time={watch2.ElapsedMilliseconds.ToString("N0")}ms");
                         scount++;
                     }
                     else
                     {
                         watch2.Stop();
-                        Console.WriteLine($"Post StockCode={simpleStockinfo.StockCode},HttpErrorCode={response.StatusCode},Spend time={watch2.ElapsedMilliseconds.ToString("N0")}ms");
+                        Console.WriteLine($"Post completion, HttpErrorCode={response.StatusCode},Spend time={watch2.ElapsedMilliseconds.ToString("N0")}ms");
                     }
                 }
                 watch.Stop();
@@ -166,11 +203,12 @@ namespace Ost
             int count = 0;
             var watch2 = new Stopwatch();
             watch2.Start();
+            var http = new HttpClient();
             foreach (var simpleStockinfo in ListData)
             {
                 Task.Factory.StartNew(() =>
                 {
-                    return new HttpClient().Post(URL, simpleStockinfo, HttpContentTypes.ApplicationJson);
+                    return http.Post(URL, simpleStockinfo, HttpContentTypes.ApplicationJson);
                 }).ContinueWith((t) =>
                 {
                     if (t.IsCompleted)

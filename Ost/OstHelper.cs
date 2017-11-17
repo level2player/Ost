@@ -10,21 +10,22 @@ namespace Ost
 {
     public static class OstHelper
     {
-        public static DataTable ConvertCSVtoDataTable(string strFilePath)
+        public static DataTable ConvertCSVtoDataTable(string strFilePath, char spiltValue)
         {
             DataTable dt = new DataTable();
             using (StreamReader sr = new StreamReader(strFilePath, Encoding.Default))
             {
-                string[] headers = sr.ReadLine().Split(',');
+                string[] headers = sr.ReadLine().Split(spiltValue);
                 foreach (string header in headers)
                 {
-                    dt.Columns.Add(header);
+                    if (!string.IsNullOrWhiteSpace(header))
+                        dt.Columns.Add(header);
                 }
                 while (!sr.EndOfStream)
                 {
-                    string[] rows = sr.ReadLine().Split(',');
+                    string[] rows = sr.ReadLine().Split(spiltValue);
                     DataRow dr = dt.NewRow();
-                    for (int i = 0; i < headers.Length; i++)
+                    for (int i = 0; i < dt.Columns.Count; i++)
                     {
                         dr[i] = rows[i];
                     }
@@ -72,7 +73,7 @@ namespace Ost
             return serializer.Serialize(rows);
         }
 
-        public static string GetSubstring(string substr,string sub1,string sub2)
+        public static string GetSubstring(string substr, string sub1, string sub2)
         {
             int IndexofA = substr.IndexOf(sub1);
             int IndexofB = substr.IndexOf(sub2);
